@@ -17,26 +17,13 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-
-    @Value("${jwt.secret}")
-    private String secret;
-
-    @Value("${jwt.accessTokenExpirationTime}")
-    private Long accessTokenExpirationTime;
-
-    @Value("${jwt.refreshTokenExpirationTime}")
-    private Long refreshTokenExpirationTime;
-
+    private static final String SECRET = "a512b5ae24053250934237d6924a735891b5c7f7af009f7bd2023838fca11475";
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 60000 * 30; // Время жизни Access токена 30 min
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 60000 * 60 * 24 * 20; // Время жизни Refresh токена 20 tag
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
     }
 
     public String extractUsername(String token) {
@@ -47,12 +34,17 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
 
@@ -65,7 +57,17 @@ public class JwtUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public String createToken(Map<String, Object> claims, String username, Date expiration) {
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username, new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME));
+    }
+
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username, new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME));
+    }
+
+    private String createToken(Map<String, Object> claims, String username, Date expiration) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
@@ -73,16 +75,6 @@ public class JwtUtil {
                 .setExpiration(expiration)
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public String generateToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username, new Date((System.currentTimeMillis() + accessTokenExpirationTime)));
-    }
-
-    public String generateRefreshToken(String username) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username, new Date(System.currentTimeMillis() + refreshTokenExpirationTime));
     }
 
     public Boolean validateRefreshToken(String refreshToken, UserDetails userDetails) {

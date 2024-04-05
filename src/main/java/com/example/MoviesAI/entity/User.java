@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -30,4 +31,8 @@ public class User {
 
     @Column(name = "reset_token_expire_time")
     LocalDateTime resetTokenExpireTime;
+
+
+    @OneToMany(mappedBy = "user")
+    List<Favorite> favorites;
 }

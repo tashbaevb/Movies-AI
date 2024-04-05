@@ -20,9 +20,9 @@ public class RapidAPIService {
         this.httpClient = HttpClient.newHttpClient();
     }
 
-    public CompletableFuture<String> searchIMDB(String id) {
+    public CompletableFuture<String> searchIMDB() {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://imdb-top-100-movies.p.rapidapi.com/" + id + "/"))
+                .uri(URI.create("https://imdb-top-100-movies.p.rapidapi.com/"))
                 .header("X-RapidAPI-Key", "9a461107e4mshedcfa85633d5584p14c69bjsn76d663eb8bfd")
                 .header("X-RapidAPI-Host", "imdb-top-100-movies.p.rapidapi.com")
                 .method("GET", HttpRequest.BodyPublishers.noBody())

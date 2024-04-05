@@ -20,7 +20,7 @@ public class RapidAPIController {
 
 
     @GetMapping("/search-imdb")
-    public String searchIMDB(@RequestParam String id) throws ExecutionException, InterruptedException {
-        return rapidAPIService.searchIMDB(id).get();
+    public String searchIMDB() throws ExecutionException, InterruptedException {
+        return rapidAPIService.searchIMDB().get();
     }
 }
