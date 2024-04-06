@@ -79,26 +79,43 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public List<Movie> getRecommendedMovies(Integer userId) {
-        // Получаем избранные фильмы пользователя
         List<Movie> userFavorites = getUserFavorite(userId);
 
-        // Создаем карту для подсчета количества фильмов по жанрам в избранном
         Map<Genre, Long> genreCountMap = userFavorites.stream()
                 .collect(Collectors.groupingBy(Movie::getGenre, Collectors.counting()));
 
-        // Находим жанр с наибольшим количеством фильмов в избранном
         Genre mostCommonGenre = genreCountMap.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
-        // Если нашли жанр, получаем рекомендованные фильмы этого жанра с более высоким рейтингом
         if (mostCommonGenre != null) {
-            return movieRepository.findByGenreOrderByRatingDesc(mostCommonGenre).stream()
+            List<Movie> recommendedMovies = movieRepository.findByGenreOrderByRatingDesc(mostCommonGenre).stream()
                     .filter(movie -> !userFavorites.contains(movie)) // Исключаем фильмы, которые уже есть в избранном
                     .collect(Collectors.toList());
+
+            return recommendedMovies.stream()
+                    .filter(movie -> movie.getYear() >= getMostRecentYear(userFavorites) || // Фильмы новее или такого же года, что и в избранном
+                            movie.getGenre().equals(mostCommonGenre) || // Фильмы того же жанра, что и наиболее распространенный в избранном
+                            movie.getRating() >= getAverageRating(userFavorites)) // Фильмы с рейтингом выше среднего рейтинга в избранном
+                    .collect(Collectors.toList());
         } else {
-            return List.of(); // Возвращаем пустой список, если у пользователя нет избранных фильмов
+            return List.of();
         }
+    }
+
+    private int getMostRecentYear(List<Movie> movies) {
+        return movies.stream()
+                .mapToInt(Movie::getYear)
+                .max()
+                .orElse(0);
+    }
+
+    // Метод для нахождения среднего рейтинга избранных фильмов пользователя
+    private double getAverageRating(List<Movie> movies) {
+        return movies.stream()
+                .mapToDouble(Movie::getRating)
+                .average()
+                .orElse(0.0);
     }
 }
