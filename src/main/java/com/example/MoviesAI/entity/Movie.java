@@ -1,5 +1,6 @@
 package com.example.MoviesAI.entity;
 
+import com.example.MoviesAI.enums.Genre;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +22,8 @@ public class Movie {
 
     Integer year;
 
-    String genre;
+    @Enumerated(EnumType.STRING)
+    Genre genre;
 
     Double rating;
 }

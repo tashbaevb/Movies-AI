@@ -72,4 +72,18 @@ public class FavoriteController {
         List<Movie> userFavorites = favoriteService.getUserFavorite(currentUser.getId());
         return ResponseEntity.ok(userFavorites);
     }
+
+    @GetMapping("/favorite/recommended")
+    public ResponseEntity<List<Movie>> getUserRecommendedMovies(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
+        List<Movie> recommendedMovies = favoriteService.getRecommendedMovies(currentUser.getId());
+        return ResponseEntity.ok(recommendedMovies);
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.example.MoviesAI.entity;
 
+import com.example.MoviesAI.enums.Gender;
+import com.example.MoviesAI.enums.Genre;
 import com.example.MoviesAI.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +27,10 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     UserRole userRole;
+
+    @Enumerated(EnumType.STRING)
+    Gender gender;
+
 
     @Column(name = "reset_token")
     String resetToken;

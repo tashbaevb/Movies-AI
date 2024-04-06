@@ -11,4 +11,6 @@ public interface FavoriteService {
     void removeFromFavorite(Integer userId, Integer movieId);
 
     List<Movie> getUserFavorite(Integer userId);
+
+    List<Movie> getRecommendedMovies(Integer userId);
 }
